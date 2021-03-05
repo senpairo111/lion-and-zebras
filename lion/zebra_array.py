@@ -1,12 +1,11 @@
 from functools import reduce
-
+import matplotlib.pyplot as plt
 import numpy as np
-
 from zebra import Zebra
 from settings import zebra_count, lion_max_speed
-from settings import nec_kills, mutation, speed_max
+from settings import nec_kills, mutation, speed_max, year_deadline
 import random
-from settings import speeds
+from settings import SPEEDS
 
 
 class ZebraArray:
@@ -16,8 +15,13 @@ class ZebraArray:
         self.zebras = []
         self.failed_year = 0
         self.failed_total = 0
+        self.total_speeds = []
+        self.failed_list = []
+        zeb_div = zebra_count / len(SPEEDS)
         for i in range(zebra_count):
-            self.zebras.append(Zebra(random.choice(speeds)))
+            if i > zeb_div:
+                zeb_div += zebra_count / len(SPEEDS)
+            self.zebras.append(Zebra(SPEEDS[i % len(SPEEDS)]))
 
     def zeb_picker(self):
         cur = random.choice(self.zebras)
@@ -36,6 +40,7 @@ class ZebraArray:
             else:
                 self.failed_year += 1
                 self.failed_total += 1
+        self.failed_list.append(self.failed_year)
 
 
     def breeder(self):
@@ -51,8 +56,10 @@ class ZebraArray:
                     self.zebras[i].speed = speed_max
         self.years_passed += 1
 
-    def print_stats(self):
+    def print_stats(self, print_stats=False):
         avg = reduce(lambda x, y: x + y.speed, self.zebras, 0) / len(self.zebras)
-        print(f"the average speed is {avg}")
+        self.total_speeds.append(avg)
         dv = np.sqrt(reduce(lambda x, y: x + (y.speed - avg) ** 2, self.zebras, 0)) / len(self.zebras)
-        print(f"the standard deviation is {dv}")
+        if print_stats:
+            print(f"the average speed is {avg}")
+            print(f"the standard deviation is {dv}")
